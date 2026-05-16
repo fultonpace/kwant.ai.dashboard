@@ -1,17 +1,235 @@
-import streamlit as st
-import plotly.graph_objects as go
-import plotly.express as px
 import pandas as pd
-import sys, os
+import numpy as np
+import random
 
-sys.path.insert(0, os.path.dirname(__file__))
-from mock_data import (
-    PROJECT, WORKFORCEOS_SCORES, KPI, ROI,
-    HOURLY_HEADCOUNT, WEEKLY_TREND, TRADES, ZONES,
-    FATIGUE_FLAGS, SUBCONTRACTORS, CERTIFICATIONS,
-    MUSTER, GATE, CHANGE_ORDERS, ALERTS
-)
+# Seed with current minute so it changes on refresh but stays stable within a session
+rng = random.Random()
+np = __import__('numpy')
+rng.seed(None)  # truly random each load
 
+def r(base, low, high):
+    """Randomize a value within a realistic range around base."""
+    return round(base + rng.uniform(low, high), 1)
+
+def ri(base, low, high):
+    return max(0, int(base + rng.randint(low, high)))
+
+PROJECT = {
+    "name": "Hudson Yards — Tower C",
+    "location": "New York, NY",
+    "week": 34,
+    "total_weeks": 78,
+    "date": "May 15, 2026",
+    "planned_headcount": 310,
+    "contract_value_m": 480,
+    "phase": "MEP (Mechanical, Electrical & Plumbing) Rough-in + Curtain Wall",
+}
+
+# WorkforceOS scores fluctuate ±5 points
+WORKFORCEOS_SCORES = {
+    "Safety":       {"score": ri(72, -5, 5),  "target": 85, "note": "2 near-misses · 1 zone breach · TRIR 0.82"},
+    "Productivity": {"score": ri(68, -5, 5),  "target": 85, "note": "Electrical below plan · -3d schedule"},
+    "Compliance":   {"score": ri(84, -3, 3),  "target": 85, "note": "11 certs expiring · COI current all subs"},
+}
+
+on_site     = ri(284, -8, 12)
+near_misses = ri(2, -1, 2)
+fatigue_ct  = ri(7, -1, 2)
+overtime_ct = ri(19, -3, 4)
+inc_free    = ri(19, 0, 1)
+
+KPI = {
+    "on_site":               on_site,
+    "planned":               310,
+    "utilization":           round(on_site / 310 * 100),
+    "avg_hrs":               round(r(6.4, -0.4, 0.6), 1),
+    "overtime_flags_7d":     overtime_ct,
+    "incidents":             0,
+    "incident_free_days":    inc_free,
+    "trir":                  round(r(0.82, -0.05, 0.05), 2),
+    "near_misses_today":     near_misses,
+    "zone_breaches":         ri(1, 0, 1),
+    "schedule_variance_days": ri(-3, -1, 1),
+    "compliance_rate":       ri(96, -2, 2),
+    "fatigue_flags":         fatigue_ct,
+}
+
+# Hourly headcount — ramp shape preserved, noise added
+base_actual = [14, 88, 196, 251, 268, 272, 241, 258, 271, 284]
+base_fatigue = [0,   0,   4,   7,   7,   7,   6,   7,   7,   7]
+actual_hc  = [max(5, v + rng.randint(-8, 8)) for v in base_actual]
+fatigue_hc = [max(0, min(f + rng.randint(-1, 1), actual_hc[i])) for i, f in enumerate(base_fatigue)]
+
+HOURLY_HEADCOUNT = pd.DataFrame({
+    "hour":            ["6AM","7AM","8AM","9AM","10AM","11AM","12PM","1PM","2PM","3PM"],
+    "actual":          actual_hc,
+    "fatigue_flagged": fatigue_hc,
+    "planned":         [310]*10,
+})
+
+# Trade names fixed, actuals randomized within realistic range
+trade_data = [
+    ("Concrete / formwork",                    58, 60),
+    ("Structural steel",                       44, 48),
+    ("Curtain wall",                           41, 45),
+    ("MEP — Mechanical (HVAC & piping)",       36, 38),
+    ("MEP — Electrical (power & lighting)",    14, 22),
+    ("MEP — Plumbing (water & drainage)",      26, 28),
+    ("Carpentry / framing",                    38, 40),
+    ("Laborers / general",                     27, 29),
+]
+TRADES = pd.DataFrame([
+    {"trade": name, "actual": max(1, ri(base, -4, 4)), "planned": planned}
+    for name, base, planned in trade_data
+])
+TRADES["pct"] = (TRADES["actual"] / TRADES["planned"] * 100).round(0).astype(int)
+
+# Zone production splits randomized ±5%
+zone_data = [
+    ("Structure (L12–22)",               97, 71, 18,  8),
+    ("MEP (Mech/Elec/Plumbing) rough-in",62, 38, 14, 10),
+    ("Curtain wall",                      41, 24, 10,  7),
+    ("Staging / grade",                   84, 62, 15,  7),
+]
+rows = []
+for zone, workers, prod, transit, down in zone_data:
+    w = max(10, ri(workers, -6, 6))
+    p = max(5, min(prod + rng.randint(-5, 5), w - 5))
+    t = max(2, min(transit + rng.randint(-3, 3), w - p - 2))
+    d = w - p - t
+    rows.append({"zone": zone, "workers": w, "production": p, "transit": t, "downtime": max(0, d)})
+ZONES = pd.DataFrame(rows)
+
+# Fatigue — names fixed, streak/hrs/risk randomized slightly
+fatigue_data = [
+    ("R. Gutierrez", "Electrical",                   9, 10.2, "High"),
+    ("M. Okafor",    "Electrical",                   9,  9.8, "High"),
+    ("D. Reyes",     "Concrete",                     6, 10.1, "High"),
+    ("T. Callahan",  "Scaffold",                     7,  9.4, "Medium"),
+    ("J. Morales",   "MEP — Mechanical",             6,  9.1, "Medium"),
+    ("B. Osei",      "Laborers",                     5,  8.9, "Medium"),
+    ("C. Huang",     "Structural steel",             5,  8.5, "Medium"),
+]
+FATIGUE_FLAGS = pd.DataFrame([
+    {
+        "worker":   name,
+        "trade":    trade,
+        "streak":   max(4, streak + rng.randint(-1, 1)),
+        "avg_hrs":  round(r(hrs, -0.3, 0.3), 1),
+        "risk":     risk,
+    }
+    for name, trade, streak, hrs, risk in fatigue_data
+])
+
+# Subcontractors — names/TRIR/compliance fixed, score randomized ±4
+sub_data = [
+    ("Stahl Electric",   41, 14, "High",   2.1, 71),
+    ("Pyramid Scaffold", 58, 38, "Medium", 1.4, 83),
+    ("CoreSteel LLC",    71, 44, "Medium", 0.9, 91),
+    ("Harbor Curtain",   79, 41, "Low",    0.7, 94),
+    ("Summit MEP — Mechanical, Electrical & Plumbing", 82, 62, "Low", 0.6, 97),
+    ("Apex Concrete",    76, 58, "Low",    0.8, 95),
+]
+SUBCONTRACTORS = pd.DataFrame([
+    {
+        "name":       name,
+        "score":      max(20, min(99, ri(score, -4, 4))),
+        "workers":    max(1, ri(workers, -3, 3)),
+        "risk":       risk,
+        "trir":       round(r(trir, -0.1, 0.1), 1),
+        "compliance": max(60, min(100, ri(comp, -3, 3))),
+    }
+    for name, score, workers, risk, trir, comp in sub_data
+]).sort_values("score")
+
+# Certifications — totals fixed, compliant count randomized ±2
+cert_data = [
+    ("OSHA 30-hour",                          284, 284, 0),
+    ("Fall protection",                       271, 284, 0),
+    ("Scaffold competency",                    38,  44, 6),
+    ("Confined space entry",                   17,  22, 5),
+    ("Forklift / telehandler operator",        29,  29, 0),
+]
+CERTIFICATIONS = pd.DataFrame([
+    {
+        "cert":      cert,
+        "compliant": max(0, min(total, ri(compliant, -2, 2))),
+        "total":     total,
+        "expiring":  max(0, ri(expiring, -1, 1)),
+    }
+    for cert, compliant, total, expiring in cert_data
+])
+
+ROI = {
+    "checkin_manual_min":           25,
+    "checkin_kwant_min":             4,
+    "onboarding_manual_min":        90,
+    "onboarding_kwant_min":         38,
+    "emergency_manual_min":         35,
+    "emergency_kwant_min":           4,
+    "admin_hrs_saved_weekly":        7,
+    "hrs_captured_total":       185000,
+    "cost_savings_low_k":           40,
+    "cost_savings_high_k":         160,
+    "incident_response_reduction_pct": 75,
+    "digital_reporting_pct":        95,
+}
+
+MUSTER = {
+    "last_drill":              "May 12, 2026 · 10:15 AM",
+    "total_on_site_at_drill":  271,
+    "accounted_for":           263,
+    "missing":                   8,
+    "time_to_full_account_min": 3.8,
+    "benchmark_manual_min":     28,
+    "zones_cleared": ["L1 Staging", "L9 Structure", "L12 MEP", "Curtain Wall"],
+    "zones_pending": [],
+}
+
+GATE = {
+    "avg_checkin_time_sec": max(8, ri(14, -3, 3)),
+    "manual_baseline_sec":  90,
+    "peak_flow_per_hr":     ri(312, -15, 15),
+    "total_today":          on_site,
+    "first_badge_time":     "5:58 AM",
+    "peak_hour":            "7–8 AM",
+}
+
+CHANGE_ORDERS = pd.DataFrame([
+    {"co": "CO-114", "trade": "MEP Electrical", "zone": "L14–16 Electrical room",
+     "kwant_hrs": ri(186, -5, 5), "reported_hrs": 210, "status": "Disputed"},
+    {"co": "CO-118", "trade": "Concrete",       "zone": "L9 Pour deck",
+     "kwant_hrs": ri(312, -4, 4), "reported_hrs": 314, "status": "Approved"},
+    {"co": "CO-121", "trade": "Curtain wall",   "zone": "L20–22 East face",
+     "kwant_hrs": ri(97, -3, 3),  "reported_hrs": 97,  "status": "Approved"},
+    {"co": "CO-125", "trade": "Structural steel","zone": "L18 Structural",
+     "kwant_hrs": ri(144, -5, 5), "reported_hrs": 171, "status": "Disputed"},
+    {"co": "CO-129", "trade": "MEP Mechanical", "zone": "L10–12 HVAC shaft",
+     "kwant_hrs": ri(228, -4, 4), "reported_hrs": 229, "status": "Approved"},
+])
+CHANGE_ORDERS["variance"] = CHANGE_ORDERS["kwant_hrs"] - CHANGE_ORDERS["reported_hrs"]
+
+base_actual_wk  = [198, 214, 231, 248, 261, 275, 279, 284]
+base_planned_wk = [220, 240, 255, 270, 285, 300, 305, 310]
+base_fatigue_wk = [2,   3,   3,   4,   5,   6,   7,   7]
+WEEKLY_TREND = pd.DataFrame({
+    "week":          ["Wk 27","Wk 28","Wk 29","Wk 30","Wk 31","Wk 32","Wk 33","Wk 34"],
+    "actual":        [max(100, v + rng.randint(-5, 5)) for v in base_actual_wk],
+    "planned":       base_planned_wk,
+    "fatigue_flags": [max(0, v + rng.randint(-1, 1)) for v in base_fatigue_wk],
+})
+
+ALERTS = [
+    {"severity": "critical", "icon": "🔴", "title": f"Fatigue threshold — {fatigue_ct} workers flagged including 3 from Stahl Electric at 9th consecutive day.", "time": "08:00 AM", "source": "Fatigue Mgmt"},
+    {"severity": "warning",  "icon": "⚠️", "title": "Unauthorized zone entry — L18 mechanical shaft. Badge #A-2291.",                                           "time": "08:47 AM", "source": "ZoneIQ"},
+    {"severity": "warning",  "icon": "⚠️", "title": "Near-miss logged — falling object, curtain wall L22. Area cleared.",                                       "time": "09:14 AM", "source": "Safety"},
+    {"severity": "warning",  "icon": "⚠️", "title": "CO-114 hour variance flagged — Kwant verified hrs below reported. Data sent to PM.",                       "time": "09:30 AM", "source": "Change Orders"},
+    {"severity": "info",     "icon": "ℹ️", "title": f"MEP Electrical headcount {KPI['on_site'] - 270} of 22 workers. Root cause: fatigue flags + no-shows.",   "time": "08:00 AM", "source": "WorkforceOS"},
+    {"severity": "resolved", "icon": "✅", "title": "SOS resolved — Badge #B-0074 confirmed safe. False alarm.",                                                 "time": "07:32 AM", "source": "Safety"},
+]
+
+
+# ─────────────────────────────────────────────
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Kwant · PM Dashboard",
