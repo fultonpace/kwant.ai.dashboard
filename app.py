@@ -5,7 +5,7 @@ import pandas as pd
 import sys, os
 
 sys.path.insert(0, os.path.dirname(__file__))
-from data.mock_data import (
+from mock_data import (
     PROJECT, WORKFORCEOS_SCORES, KPI, ROI,
     HOURLY_HEADCOUNT, WEEKLY_TREND, TRADES, ZONES,
     FATIGUE_FLAGS, SUBCONTRACTORS, CERTIFICATIONS,
