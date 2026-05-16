@@ -1,11 +1,13 @@
+import streamlit as st
+import plotly.graph_objects as go
+import plotly.express as px
 import pandas as pd
 import numpy as np
 import random
 
-# Seed with current minute so it changes on refresh but stays stable within a session
 rng = random.Random()
-np = __import__('numpy')
-rng.seed(None)  # truly random each load
+rng.seed(None)
+
 
 def r(base, low, high):
     """Randomize a value within a realistic range around base."""
@@ -229,7 +231,6 @@ ALERTS = [
 ]
 
 
-# ─────────────────────────────────────────────
 # ── Page config ──────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Kwant · PM Dashboard",
