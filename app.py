@@ -233,16 +233,16 @@ WEEKLY_TREND = pd.DataFrame({
 })
 
 ALERTS = [
-    {"severity": "critical", "icon": "🔴", "title": f"Fatigue threshold — {fatigue_ct} workers flagged. 3 HV electricians from Stahl Electric at 10+ consecutive days.", "time": "06:00 AM", "source": "Fatigue Mgmt"},
-    {"severity": "warning",  "icon": "⚠️", "title": "Unauthorized zone entry — Electrical room L2 (restricted energized area). Badge #A-4471.", "time": "07:22 AM", "source": "ZoneIQ"},
-    {"severity": "warning",  "icon": "⚠️", "title": "Near-miss logged — arc flash near-miss at switchgear bay. Area isolated. Safety review required.", "time": "08:05 AM", "source": "Safety"},
-    {"severity": "warning",  "icon": "⚠️", "title": "CO-214 hour variance flagged — 56hrs below reported. Kwant zone data sent to PM.", "time": "08:30 AM", "source": "Change Orders"},
-    {"severity": "info",     "icon": "ℹ️", "title": "HV Electrical headcount 178 of 285 planned. Root cause: labor shortage + fatigue flags.", "time": "07:00 AM", "source": "WorkforceOS"},
-    {"severity": "resolved", "icon": "✅", "title": "SOS resolved — Badge #B-1122 confirmed safe. Worker experienced heat stress, now resting.", "time": "06:44 AM", "source": "Safety"},
+    {"severity": "critical", "icon": "", "title": f"Fatigue threshold — {fatigue_ct} workers flagged. 3 HV electricians from Stahl Electric at 10+ consecutive days.", "time": "06:00 AM", "source": "Fatigue Mgmt"},
+    {"severity": "warning",  "icon": "", "title": "Unauthorized zone entry — Electrical room L2 (restricted energized area). Badge #A-4471.", "time": "07:22 AM", "source": "ZoneIQ"},
+    {"severity": "warning",  "icon": "", "title": "Near-miss logged — arc flash near-miss at switchgear bay. Area isolated. Safety review required.", "time": "08:05 AM", "source": "Safety"},
+    {"severity": "warning",  "icon": "", "title": "CO-214 hour variance flagged — 56hrs below reported. Kwant zone data sent to PM.", "time": "08:30 AM", "source": "Change Orders"},
+    {"severity": "info",     "icon": "", "title": "HV Electrical headcount 178 of 285 planned. Root cause: labor shortage + fatigue flags.", "time": "07:00 AM", "source": "WorkforceOS"},
+    {"severity": "resolved", "icon": "", "title": "SOS resolved — Badge #B-1122 confirmed safe. Worker experienced heat stress, now resting.", "time": "06:44 AM", "source": "Safety"},
 ]
 
 # ── Page config ───────────────────────────────────────────────
-st.set_page_config(page_title="Kwant · PM Dashboard", page_icon="🏗️",
+st.set_page_config(page_title="Kwant · PM Dashboard", page_icon="",
                    layout="wide", initial_sidebar_state="collapsed")
 
 BLUE="#1B3FA0"; GOLD="#F5C518"; GREEN="#3B6D11"; RED="#A32D2D"; LIGHT="#f8f7f4"; BORDER="#e8e6e0"
@@ -293,7 +293,7 @@ pct = round(PROJECT["week"] / PROJECT["total_weeks"] * 100)
 st.markdown(f"""
 <div class="kw-header">
   <div class="kw-header-left">
-    <div class="kw-proj-name">🏗️ {PROJECT['name']}</div>
+    <div class="kw-proj-name">{PROJECT['name']}</div>
     <div class="kw-proj-sub">
       {PROJECT['location']} &nbsp;·&nbsp; {PROJECT['capacity_mw']}MW hyperscale &nbsp;·&nbsp;
       <span title="Current week of construction vs total project duration">{PROJECT['week']} of {PROJECT['total_weeks']} weeks ({pct}% complete)</span>
@@ -303,15 +303,15 @@ st.markdown(f"""
   </div>
   <div class="kw-badges">
     <span class="badge b-white" title="Dashboard is receiving live badge and sensor data from the jobsite"><span class="dot"></span> Live</span>
-    <span class="badge b-amber" title="Alerts requiring action from the project team">⚠ 3 open alerts</span>
-    <span class="badge b-red" title="Workers who have exceeded consecutive workday or hour thresholds — elevated accident risk">🔴 {fatigue_ct} fatigue flags</span>
-    <span class="badge b-amber" title="Change orders where Kwant-verified hours differ from subcontractor-reported hours by more than 5%">📋 2 CO disputes</span>
+    <span class="badge b-amber" title="Alerts requiring action from the project team">3 open alerts</span>
+    <span class="badge b-red" title="Workers who have exceeded consecutive workday or hour thresholds — elevated accident risk">{fatigue_ct} fatigue flags</span>
+    <span class="badge b-amber" title="Change orders where Kwant-verified hours differ from subcontractor-reported hours by more than 5%">2 CO disputes</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
 # ── Alert dropdown (always visible below header) ──────────────
-with st.expander("🔔 View all active alerts", expanded=False):
+with st.expander("View all active alerts", expanded=False):
     sev_style = {
         "critical": ("#FCEBEB","#E24B4A"),
         "warning":  ("#FAEEDA","#EF9F27"),
@@ -340,9 +340,9 @@ with st.expander("🔔 View all active alerts", expanded=False):
 st.markdown("<div style='margin-bottom:0.75rem'></div>", unsafe_allow_html=True)
 
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 Overview", "👷 Workforce & Fatigue",
-    "🛡️ Safety & Zones", "📋 Compliance & Change Orders",
-    "💡 Kwant ROI", "🔬 Data & Methods"
+    "Overview", "Workforce & Fatigue",
+    "Safety & Zones", "Compliance & Change Orders",
+    "Kwant ROI", "Data & Methods"
 ])
 
 # ═══════════════════════════════════════════════
@@ -395,7 +395,7 @@ with tab1:
         ("Utilization",        f"{k['utilization']}%",
          "Percentage of planned headcount (920) actually on site. Below 90% = understaffed vs schedule. Data center builds run 82% fill rate on craft positions (AGC 2024).", f"vs {k['planned']} planned", "nt"),
         ("TRIR",               str(k["trir"]),
-         "Total Recordable Incident Rate — OSHA-recordable injuries per 100 FTE workers/year. Construction avg 2.2 (BLS 2024). Well-run GCs target <1.0 for prequalification.", "Target < 1.0 ✓", "up"),
+         "Total Recordable Incident Rate — OSHA-recordable injuries per 100 FTE workers/year. Construction avg 2.2 (BLS 2024). Well-run GCs target <1.0 for prequalification.", "Target < 1.0 ", "up"),
         ("Incident-free days", str(k["incident_free_days"]),
          "Consecutive days without a recordable safety incident on this jobsite", "0 recordable incidents", "up"),
         ("Near-misses today",  str(k["near_misses_today"]),
@@ -535,7 +535,7 @@ with tab2:
             bg     = "#FCEBEB" if row["risk"] == "High" else "#FAEEDA"
             color  = "#A32D2D" if row["risk"] == "High" else "#854F0B"
             border = "#E24B4A" if row["risk"] == "High" else "#EF9F27"
-            icon   = "🔴" if row["risk"] == "High" else "🟡"
+            icon   = "" if row["risk"] == "High" else ""
             risk_tt = "High risk: worker has exceeded fatigue threshold. Recommend immediate schedule review or rest day." if row["risk"] == "High" else "Medium risk: approaching threshold. Monitor closely."
             st.markdown(f"""
             <div style="display:flex;justify-content:space-between;align-items:center;
@@ -652,12 +652,12 @@ with tab3:
           <div style="background:#EAF3DE;border-radius:8px;padding:10px 14px;margin-bottom:10px"
                title="Time saved vs manual roll call. Suffolk benchmark: manual 20–45 min → Kwant under 5 min.">
             <div style="font-size:13px;font-weight:600;color:{GREEN}">
-              ✅ {time_saved:.0f} min faster than manual ({m['benchmark_manual_min']} min → {m['time_to_full_account_min']} min)
+               {time_saved:.0f} min faster than manual ({m['benchmark_manual_min']} min → {m['time_to_full_account_min']} min)
             </div>
           </div>
           <div style="font-size:11px;color:#aaa;margin-bottom:6px;font-weight:600" title="Zones confirmed clear — all workers accounted for">ZONES CLEARED</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
-            {''.join([f"<span style='background:#EAF3DE;color:{GREEN};border:1px solid #97C459;border-radius:5px;padding:3px 9px;font-size:11px'>✓ {z}</span>" for z in m['zones_cleared']])}
+            {''.join([f"<span style='background:#EAF3DE;color:{GREEN};border:1px solid #97C459;border-radius:5px;padding:3px 9px;font-size:11px'> {z}</span>" for z in m['zones_cleared']])}
           </div>
         </div>""", unsafe_allow_html=True)
 
@@ -666,7 +666,7 @@ with tab3:
         safety_kpis = [
             ("TRIR", str(KPI["trir"]),
              "Total Recordable Incident Rate. Formula: (incidents × 200,000) ÷ total hours worked. Construction avg 2.2 (BLS 2024). Under 1.0 = excellent and required for most GC prequalification.",
-             "Target < 1.0 ✓", "up"),
+             "Target < 1.0 ", "up"),
             ("Incident-free days", str(KPI["incident_free_days"]),
              "Consecutive days without an OSHA-recordable incident", "0 recordable incidents", "up"),
             ("Zone breaches today", str(KPI["zone_breaches"]),
@@ -708,10 +708,10 @@ with tab4:
             badge = (f'<span style="background:#FAEEDA;color:#854F0B;border:1px solid #EF9F27;'
                      f'border-radius:4px;padding:2px 8px;font-size:11px" '
                      f'title="Workers whose certification expires within 30 days — Kwant sends automated renewal reminders">'
-                     f'⚠ {row["expiring"]} expiring</span>') if row["expiring"] > 0 else \
+                     f' {row["expiring"]} expiring</span>') if row["expiring"] > 0 else \
                     (f'<span style="background:#EAF3DE;color:{GREEN};border:1px solid #97C459;'
                      f'border-radius:4px;padding:2px 8px;font-size:11px" '
-                     f'title="All workers hold valid, current certification">✓ Current</span>')
+                     f'title="All workers hold valid, current certification"> Current</span>')
             cert_tt = cert_tooltips.get(row["cert"], "")
             st.markdown(f"""
             <div style="padding:10px 0;border-bottom:1px solid {BORDER}" title="{cert_tt}">
@@ -750,13 +750,13 @@ with tab4:
         st.markdown(f"""
         <div style="background:#E6F1FB;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:#0C447C"
              title="Kwant zone sensor data is compared against subcontractor billing. Disputes auto-flagged when variance exceeds 5%.">
-          ℹ️ Kwant location data validates hours worked by zone. Disputes auto-flagged when variance &gt; 5%.
+          ℹ Kwant location data validates hours worked by zone. Disputes auto-flagged when variance &gt; 5%.
         </div>""", unsafe_allow_html=True)
         for _, row in CHANGE_ORDERS.iterrows():
             is_disputed = row["status"] == "Disputed"
             bg   = "#FCEBEB" if is_disputed else "#EAF3DE"
             bc   = "#E24B4A" if is_disputed else "#97C459"
-            icon = "⚠️" if is_disputed else "✅"
+            icon = "" if is_disputed else ""
             var_c = RED if row["variance"] < -5 else GREEN
             co_tt = "Kwant verified hours significantly below subcontractor report — flagged for PM review before payment." if is_disputed else "Kwant data and subcontractor report within acceptable variance — approved for payment."
             st.markdown(f"""
@@ -927,7 +927,7 @@ with tab5:
           </div>
           <div style="background:#EAF3DE;border-radius:8px;padding:10px 14px;margin-top:12px;
                       font-size:12px;color:{GREEN};text-align:center">
-            ✓ EllisDon: location data prevented a false injury claim + verified change order work
+             EllisDon: location data prevented a false injury claim + verified change order work
           </div>
         </div>""", unsafe_allow_html=True)
 
@@ -941,7 +941,7 @@ with tab6:
     st.markdown(f"""
     <div style="background:linear-gradient(135deg,{BLUE} 0%,#0f2870 100%);border-radius:12px;
                 padding:1.25rem 1.75rem;margin-bottom:1.5rem;color:white">
-      <div style="font-size:16px;font-weight:700">🔬 Data Generation & Methodology</div>
+      <div style="font-size:16px;font-weight:700">Data Generation & Methodology</div>
       <div style="font-size:12px;opacity:.65;margin-top:4px">
         How the numbers in this dashboard are generated, what assumptions are built in, and where the parameters come from.
       </div>
