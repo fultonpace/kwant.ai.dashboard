@@ -16,7 +16,7 @@ def ri(base, low, high):
 
 def tip(text, tooltip):
     """Wrap text in a span with a hover tooltip."""
-    return f'<span title="{tooltip}" style="cursor:help;border-bottom:1px dotted #aaa">{text}</span>'
+    return f'<span data-tip="{tooltip}" style="cursor:help;border-bottom:1px dotted #aaa">{text}</span>'
 
 PROJECT = {
     "name": "Hudson Yards — Tower C",
@@ -263,16 +263,16 @@ st.markdown(f"""
     <div class="kw-proj-name">🏗️ {PROJECT['name']}</div>
     <div class="kw-proj-sub">
       {PROJECT['location']} &nbsp;·&nbsp;
-      <span title="Current week of construction vs total project duration">{PROJECT['week']} of {PROJECT['total_weeks']} weeks ({pct}% complete)</span>
-      &nbsp;·&nbsp; Phase: <span title="MEP = Mechanical, Electrical & Plumbing — the building systems being installed on active floors. Curtain wall = exterior glass facade installation.">{PROJECT['phase']}</span>
+      <span data-tip="Current week of construction vs total project duration">{PROJECT['week']} of {PROJECT['total_weeks']} weeks ({pct}% complete)</span>
+      &nbsp;·&nbsp; Phase: <span data-tip="MEP = Mechanical, Electrical & Plumbing — the building systems being installed on active floors. Curtain wall = exterior glass facade installation.">{PROJECT['phase']}</span>
       &nbsp;·&nbsp; {PROJECT['date']} &nbsp;·&nbsp; Updated 2 min ago
     </div>
   </div>
   <div class="kw-badges">
-    <span class="badge b-white" title="Dashboard is receiving live badge and sensor data from the jobsite"><span class="dot"></span> Live</span>
-    <span class="badge b-amber" title="Alerts requiring action from the project team">⚠ 3 open alerts</span>
-    <span class="badge b-red" title="Workers who have exceeded consecutive workday or hour thresholds — elevated accident risk">🔴 {fatigue_ct} fatigue flags</span>
-    <span class="badge b-amber" title="Change orders where Kwant-verified hours differ from subcontractor-reported hours by more than 5%">📋 2 CO disputes</span>
+    <span class="badge b-white" data-tip="Dashboard is receiving live badge and sensor data from the jobsite"><span class="dot"></span> Live</span>
+    <span class="badge b-amber" data-tip="Alerts requiring action from the project team">⚠ 3 open alerts</span>
+    <span class="badge b-red" data-tip="Workers who have exceeded consecutive workday or hour thresholds — elevated accident risk">🔴 {fatigue_ct} fatigue flags</span>
+    <span class="badge b-amber" data-tip="Change orders where Kwant-verified hours differ from subcontractor-reported hours by more than 5%">📋 2 CO disputes</span>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -318,7 +318,7 @@ with tab1:
             st.plotly_chart(fig, use_container_width=True, key=f"g_{label}")
             st.markdown(f"""
             <div style="background:{bg_c};border-radius:8px;padding:7px 10px;margin-top:-8px;margin-bottom:6px"
-                 title="{score_tooltips[label]}">
+                 data-tip="{score_tooltips[label]}">
               <div style="font-size:12px;font-weight:600;color:#1a1a1a">{label} — {data['score']}/100</div>
               <div style="font-size:11px;color:#666;margin-top:2px">{data['note']}</div>
             </div>""", unsafe_allow_html=True)
@@ -348,7 +348,7 @@ with tab1:
     for col, (label, val, tooltip, delta, direction) in zip(cols, kpis):
         with col:
             st.markdown(f"""
-            <div class="mcard" title="{tooltip}">
+            <div class="mcard" data-tip="{tooltip}">
               <div class="mlabel">{label}</div>
               <div class="mval">{val}</div>
               <div class="mdelta {direction}">{delta}</div>
@@ -396,7 +396,7 @@ with tab1:
             bg, bc = sev_style.get(a["severity"], ("#f5f5f5","#ccc"))
             tt = sev_tooltip.get(a["severity"], "")
             st.markdown(f"""
-            <div class="alert-item" style="background:{bg};border-color:{bc}" title="{tt}">
+            <div class="alert-item" style="background:{bg};border-color:{bc}" data-tip="{tt}">
               <div>
                 <div class="alert-title">{a['icon']} {a['title']}</div>
                 <div class="alert-meta">{a['time']} · {a['source']}</div>
@@ -470,7 +470,7 @@ with tab2:
         for col, (label, val, tooltip, delta, direction) in zip(gcols, gate_kpis):
             with col:
                 st.markdown(f"""
-                <div class="mcard" title="{tooltip}">
+                <div class="mcard" data-tip="{tooltip}">
                   <div class="mlabel">{label}</div>
                   <div class="mval" style="font-size:20px">{val}</div>
                   <div class="mdelta {direction}">{delta}</div>
@@ -490,15 +490,15 @@ with tab2:
             <div style="display:flex;justify-content:space-between;align-items:center;
                         padding:9px 12px;border-radius:8px;background:{bg};
                         border:1px solid {border};margin-bottom:7px"
-                 title="{risk_tt}">
+                 data-tip="{risk_tt}">
               <div>
                 <div style="font-size:13px;font-weight:600;color:#1a1a1a">{icon} {row['worker']}</div>
                 <div style="font-size:11px;color:#888;margin-top:2px">
                   {row['trade']} &nbsp;·&nbsp;
-                  <span title="Average hours per day this worker has been on site over their current streak">{row['avg_hrs']}h avg/day</span>
+                  <span data-tip="Average hours per day this worker has been on site over their current streak">{row['avg_hrs']}h avg/day</span>
                 </div>
               </div>
-              <div style="text-align:right" title="Number of consecutive days worked without a rest day">
+              <div style="text-align:right" data-tip="Number of consecutive days worked without a rest day">
                 <div style="font-size:18px;font-weight:700;color:{color}">{row['streak']}</div>
                 <div style="font-size:10px;color:{color}">consec. days</div>
               </div>
@@ -547,20 +547,20 @@ with tab3:
                         padding:12px 14px;margin-bottom:10px">
               <div style="display:flex;justify-content:space-between;margin-bottom:8px">
                 <span style="font-size:13px;font-weight:600;color:#1a1a1a">{row['zone']}</span>
-                <span style="font-size:12px;color:#aaa" title="Total workers currently detected in this zone by Kwant location sensors">{total} workers</span>
+                <span style="font-size:12px;color:#aaa" data-tip="Total workers currently detected in this zone by Kwant location sensors">{total} workers</span>
               </div>
               <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px">
                 <div style="flex:{p};background:{prod_color};border-radius:6px 0 0 6px"
-                     title="{zone_tooltips['production']}"></div>
+                     data-tip="{zone_tooltips['production']}"></div>
                 <div style="flex:{t};background:#EF9F27"
-                     title="{zone_tooltips['transit']}"></div>
+                     data-tip="{zone_tooltips['transit']}"></div>
                 <div style="flex:{d};background:#e0ddd7;border-radius:0 6px 6px 0"
-                     title="{zone_tooltips['downtime']}"></div>
+                     data-tip="{zone_tooltips['downtime']}"></div>
               </div>
               <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:5px">
-                <span style="color:{prod_color};font-weight:600" title="{zone_tooltips['production']}">{p}% production</span>
-                <span title="{zone_tooltips['transit']}">{t}% transit</span>
-                <span title="{zone_tooltips['downtime']}">{d}% downtime</span>
+                <span style="color:{prod_color};font-weight:600" data-tip="{zone_tooltips['production']}">{p}% production</span>
+                <span data-tip="{zone_tooltips['transit']}">{t}% transit</span>
+                <span data-tip="{zone_tooltips['downtime']}">{d}% downtime</span>
               </div>
             </div>""", unsafe_allow_html=True)
 
@@ -591,32 +591,32 @@ with tab3:
         st.markdown(f"""
         <div style="background:white;border:1px solid {BORDER};border-radius:10px;padding:1.25rem">
           <div style="font-size:11px;color:#aaa;margin-bottom:12px"
-               title="Date and time of the most recent emergency evacuation drill">{m['last_drill']}</div>
+               data-tip="Date and time of the most recent emergency evacuation drill">{m['last_drill']}</div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
             <div style="text-align:center"
-                 title="Workers confirmed at muster point or accounted for via Kwant location data">
+                 data-tip="Workers confirmed at muster point or accounted for via Kwant location data">
               <div style="font-size:38px;font-weight:700;color:{GREEN}">{m['accounted_for']}</div>
               <div style="font-size:11px;color:#aaa">Accounted for</div>
             </div>
             <div style="text-align:center"
-                 title="Workers on site at drill time who were not immediately at the muster point — located via badge data">
+                 data-tip="Workers on site at drill time who were not immediately at the muster point — located via badge data">
               <div style="font-size:38px;font-weight:700;color:{RED}">{m['missing']}</div>
               <div style="font-size:11px;color:#aaa">Initially missing</div>
             </div>
             <div style="text-align:center"
-                 title="Time from drill start to 100% worker accountability. Kwant benchmark: under 5 min. Manual baseline: 20–45 min.">
+                 data-tip="Time from drill start to 100% worker accountability. Kwant benchmark: under 5 min. Manual baseline: 20–45 min.">
               <div style="font-size:38px;font-weight:700;color:{BLUE}">{m['time_to_full_account_min']}m</div>
               <div style="font-size:11px;color:#aaa">Full accountability</div>
             </div>
           </div>
           <div style="background:#EAF3DE;border-radius:8px;padding:10px 14px;margin-bottom:10px"
-               title="Time saved vs manual roll call process. Suffolk case study: manual 20–45 min → Kwant under 5 min.">
+               data-tip="Time saved vs manual roll call process. Suffolk case study: manual 20–45 min → Kwant under 5 min.">
             <div style="font-size:13px;font-weight:600;color:{GREEN}">
               ✅ {time_saved:.0f} min faster than manual ({m['benchmark_manual_min']} min → {m['time_to_full_account_min']} min)
             </div>
           </div>
           <div style="font-size:11px;color:#aaa;margin-bottom:6px;font-weight:600"
-               title="Zones confirmed clear during drill — all workers accounted for or evacuated">ZONES CLEARED</div>
+               data-tip="Zones confirmed clear during drill — all workers accounted for or evacuated">ZONES CLEARED</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">
             {''.join([f"<span style='background:#EAF3DE;color:{GREEN};border:1px solid #97C459;border-radius:5px;padding:3px 9px;font-size:11px'>✓ {z}</span>" for z in m['zones_cleared']])}
           </div>
@@ -642,7 +642,7 @@ with tab3:
         for i, (label, val, tooltip, delta, direction) in enumerate(safety_kpis):
             with scols[i%2]:
                 st.markdown(f"""
-                <div class="mcard" style="margin-bottom:10px" title="{tooltip}">
+                <div class="mcard" style="margin-bottom:10px" data-tip="{tooltip}">
                   <div class="mlabel">{label}</div>
                   <div class="mval">{val}</div>
                   <div class="mdelta {direction}">{delta}</div>
@@ -669,25 +669,25 @@ with tab4:
             bar_c = "#E24B4A" if pct < 80 else "#EF9F27" if row["expiring"] > 0 else "#639922"
             badge = (f'<span style="background:#FAEEDA;color:#854F0B;border:1px solid #EF9F27;'
                      f'border-radius:4px;padding:2px 8px;font-size:11px" '
-                     f'title="Workers whose certification expires within 30 days — Kwant sends automated renewal reminders">'
+                     f'data-tip="Workers whose certification expires within 30 days — Kwant sends automated renewal reminders">'
                      f'⚠ {row["expiring"]} expiring</span>') if row["expiring"] > 0 else \
                     (f'<span style="background:#EAF3DE;color:{GREEN};border:1px solid #97C459;'
                      f'border-radius:4px;padding:2px 8px;font-size:11px" '
-                     f'title="All workers hold valid, current certification">✓ Current</span>')
+                     f'data-tip="All workers hold valid, current certification">✓ Current</span>')
             cert_tt = cert_tooltips.get(row["cert"], "")
             st.markdown(f"""
-            <div style="padding:10px 0;border-bottom:1px solid {BORDER}" title="{cert_tt}">
+            <div style="padding:10px 0;border-bottom:1px solid {BORDER}" data-tip="{cert_tt}">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                 <span style="font-size:13px;color:#1a1a1a;font-weight:500">{row['cert']}</span>
                 {badge}
               </div>
               <div style="display:flex;align-items:center;gap:10px">
                 <div style="flex:1;height:8px;background:#f0ede8;border-radius:4px;overflow:hidden"
-                     title="{pct}% of workers hold valid certification">
+                     data-tip="{pct}% of workers hold valid certification">
                   <div style="width:{pct}%;height:100%;background:{bar_c};border-radius:4px"></div>
                 </div>
                 <span style="font-size:11px;color:#aaa;width:55px;text-align:right"
-                      title="Compliant workers / total workers requiring this cert">{row['compliant']}/{row['total']}</span>
+                      data-tip="Compliant workers / total workers requiring this cert">{row['compliant']}/{row['total']}</span>
               </div>
             </div>""", unsafe_allow_html=True)
 
@@ -713,7 +713,7 @@ with tab4:
         </div>""", unsafe_allow_html=True)
         st.markdown(f"""
         <div style="background:#E6F1FB;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:#0C447C"
-             title="Kwant automatically compares hours logged by zone sensor data against what each subcontractor bills on their change orders">
+             data-tip="Kwant automatically compares hours logged by zone sensor data against what each subcontractor bills on their change orders">
           ℹ️ Kwant location data validates hours worked by zone. Disputes auto-flagged when variance &gt; 5%.
         </div>""", unsafe_allow_html=True)
         for _, row in CHANGE_ORDERS.iterrows():
@@ -725,7 +725,7 @@ with tab4:
             co_tt = "Kwant verified hours are significantly below what the subcontractor reported — flagged for PM review before payment." if is_disputed else "Kwant data and subcontractor report are within acceptable variance — approved for payment."
             st.markdown(f"""
             <div style="background:{bg};border:1px solid {bc};border-radius:10px;
-                        padding:12px 14px;margin-bottom:10px" title="{co_tt}">
+                        padding:12px 14px;margin-bottom:10px" data-tip="{co_tt}">
               <div style="display:flex;justify-content:space-between;align-items:flex-start">
                 <div>
                   <div style="font-size:13px;font-weight:700;color:#1a1a1a">{icon} {row['co']} — {row['trade']}</div>
@@ -738,15 +738,15 @@ with tab4:
                 </span>
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
-                <div style="text-align:center" title="Hours Kwant's zone sensors recorded workers actively present in this area">
+                <div style="text-align:center" data-tip="Hours Kwant's zone sensors recorded workers actively present in this area">
                   <div style="font-size:18px;font-weight:700;color:#1B3FA0">{row['kwant_hrs']}h</div>
                   <div style="font-size:10px;color:#aaa">Kwant verified</div>
                 </div>
-                <div style="text-align:center" title="Hours the subcontractor reported on their change order billing">
+                <div style="text-align:center" data-tip="Hours the subcontractor reported on their change order billing">
                   <div style="font-size:18px;font-weight:700;color:#aaa">{row['reported_hrs']}h</div>
                   <div style="font-size:10px;color:#aaa">Sub reported</div>
                 </div>
-                <div style="text-align:center" title="Difference between Kwant verified and reported hours. Negative = subcontractor billed more than Kwant recorded.">
+                <div style="text-align:center" data-tip="Difference between Kwant verified and reported hours. Negative = subcontractor billed more than Kwant recorded.">
                   <div style="font-size:18px;font-weight:700;color:{var_c}">{row['variance']:+d}h</div>
                   <div style="font-size:10px;color:#aaa">Variance</div>
                 </div>
@@ -756,7 +756,7 @@ with tab4:
         total_disputed = CHANGE_ORDERS[CHANGE_ORDERS["status"]=="Disputed"]["variance"].abs().sum()
         st.markdown(f"""
         <div style="background:{BLUE};border-radius:10px;padding:12px 16px;color:white;margin-top:4px"
-             title="Total labor hours currently under dispute across all flagged change orders — Kwant data is the evidence the GC uses to negotiate or deny payment">
+             data-tip="Total labor hours currently under dispute across all flagged change orders — Kwant data is the evidence the GC uses to negotiate or deny payment">
           <div style="font-size:12px;opacity:.7">Total hours in dispute — protected by Kwant data</div>
           <div style="font-size:28px;font-weight:700;color:{GOLD}">{int(total_disputed)} hrs</div>
           <div style="font-size:11px;opacity:.6;margin-top:2px">
@@ -787,7 +787,7 @@ with tab5:
         with col:
             st.markdown(f"""
             <div style="background:white;border:1px solid {BORDER};border-radius:10px;padding:1.1rem"
-                 title="{tooltip}">
+                 data-tip="{tooltip}">
               <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">{title}</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
                 <div style="text-align:center;background:#f5f3ef;border-radius:8px;padding:10px">
@@ -835,7 +835,7 @@ with tab5:
     for val, label, sub, tooltip, col in roi_cards:
         with col:
             st.markdown(f"""
-            <div class="roi-block" title="{tooltip}">
+            <div class="roi-block" data-tip="{tooltip}">
               <div class="roi-val">{val}</div>
               <div class="roi-label">{label}</div>
               <div class="roi-sub">{sub}</div>
@@ -853,13 +853,13 @@ with tab5:
         <div style="background:white;border:1px solid {BORDER};border-radius:10px;padding:1.25rem">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div style="text-align:center;padding:12px"
-                 title="Hours saved per week vs manual processes — Yates benchmark: 5–10 hrs/week">
+                 data-tip="Hours saved per week vs manual processes — Yates benchmark: 5–10 hrs/week">
               <div style="font-size:42px;font-weight:700;color:{BLUE}">{ro['admin_hrs_saved_weekly']}</div>
               <div style="font-size:12px;color:#aaa">hrs saved / week</div>
               <div style="font-size:10px;color:#bbb;margin-top:4px">Yates benchmark: 5–10 hrs/wk</div>
             </div>
             <div style="text-align:center;padding:12px"
-                 title="Cumulative admin hours saved since project started on Kwant — Week 34 × 7 hrs/week">
+                 data-tip="Cumulative admin hours saved since project started on Kwant — Week 34 × 7 hrs/week">
               <div style="font-size:42px;font-weight:700;color:{GREEN}">{total_admin_saved}</div>
               <div style="font-size:12px;color:#aaa">total hrs saved to date</div>
               <div style="font-size:10px;color:#bbb;margin-top:4px">Over {weeks_elapsed} weeks on Kwant</div>
@@ -867,7 +867,7 @@ with tab5:
           </div>
           <div style="background:#f5f3ef;border-radius:8px;padding:10px 14px;margin-top:12px;
                       font-size:12px;color:#666;text-align:center"
-               title="Total hours saved expressed as full-time equivalent weeks of PM overhead eliminated">
+               data-tip="Total hours saved expressed as full-time equivalent weeks of PM overhead eliminated">
             Equivalent to <strong>{round(total_admin_saved/40, 1)} weeks</strong> of full-time PM overhead eliminated
           </div>
         </div>""", unsafe_allow_html=True)
@@ -882,13 +882,13 @@ with tab5:
         <div style="background:white;border:1px solid {BORDER};border-radius:10px;padding:1.25rem">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div style="text-align:center;padding:12px"
-                 title="Total hours across all disputed change orders where Kwant data shows fewer hours than subcontractor billed">
+                 data-tip="Total hours across all disputed change orders where Kwant data shows fewer hours than subcontractor billed">
               <div style="font-size:42px;font-weight:700;color:{RED}">{disputed_hrs}</div>
               <div style="font-size:12px;color:#aaa">disputed hours</div>
               <div style="font-size:10px;color:#bbb;margin-top:4px">Flagged by Kwant zone data</div>
             </div>
             <div style="text-align:center;padding:12px"
-                 title="Financial value of disputed hours at $85/hr blended labor rate — money the GC is protected from overbilling">
+                 data-tip="Financial value of disputed hours at $85/hr blended labor rate — money the GC is protected from overbilling">
               <div style="font-size:42px;font-weight:700;color:{GREEN}">${value_k}K</div>
               <div style="font-size:12px;color:#aaa">value protected</div>
               <div style="font-size:10px;color:#bbb;margin-top:4px">At $85/hr blended rate</div>
